@@ -1,10 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from db_exec import Articles, Base
-
+from db_exec import Articles, Base, engine
 
 #engine=create_engine('sqlite:///db.sqlite3')
-engine=create_engine('mysql+mysqldb://jblnt:rMaKukBWHqnP8a@localhost/django_newsapp')
+#engine=create_engine('mysql+mysqldb://jblnt:rMaKukBWHqnP8a@localhost/django_newsapp')
 
 Base.metadata.create_all(engine)
 

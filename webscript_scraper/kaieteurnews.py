@@ -1,6 +1,6 @@
 from article import Article_obj
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import date
 from django.utils.text import slugify
 from random import random
 from requests import get, codes
@@ -10,9 +10,11 @@ import images as imgFunc
 import db_time
 import sys
 
+'''
 def enc(string):
     st = string.replace('\xa0',' ')
     return st.encode('ascii', 'xmlcharrefreplace').decode('utf_8')
+'''
 
 def get_raw_html(site):
     r = get(site)
@@ -55,7 +57,8 @@ def scrapeContent(url):
 
     caption=mainArticleDiv.div.div.div.find("p").find("span", "meta-cat").a.get_text()
   
-    p = enc(paragraphs)
+    #p = enc(paragraphs)
+    p=paragraphs
 
     return p, caption, (",".join(images))
 
@@ -65,8 +68,8 @@ def scrapeArticles(url, articleDate):
 
     articles=[]
     for link in articleList:
-        #articleTitle = link.find("h3").get_text()
-        articleTitle = enc(link.find("h3").get_text())
+        articleTitle = link.find("h3").get_text()
+        #articleTitle = enc(link.find("h3").get_text())
         articleLink = link.find("h3").a["href"]
 
         articleContent, articleCat, articleImages=scrapeContent(get_raw_html(articleLink))
@@ -102,7 +105,7 @@ def main():
     
     daily_article_objs=[]
     for page in pages:
-        daily_article_objs += scrapeArticles(page, datetime(year, month, day))
+        daily_article_objs += scrapeArticles(page, date(year, month, day))
 
     #db insert and commit
     for art in daily_article_objs:

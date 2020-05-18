@@ -1,6 +1,6 @@
 from article import Article_obj
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import date
 from django.utils.text import slugify
 from random import random
 from requests import get, codes
@@ -10,9 +10,11 @@ import db_time
 import images as imgFunc
 import sys
 
+'''
 def enc(string):
     st=string.replace('\xa0', ' ')
     return st.encode('ascii', 'xmlcharrefreplace').decode('utf_8')
+'''
 
 def get_raw_html(site):
     r = get(site)
@@ -20,7 +22,8 @@ def get_raw_html(site):
     if (r.status_code == codes.ok):
         return r.text
     else:
-        raise Exception("Error Occured getting HTML. Error Code: {}".format(r.status_code))
+        return r.status_code
+        #raise Exception("Error Occured getting HTML. Error Code: {}".format(r.status_code))
 
 def scrapeContent(urlText):
     soup=BeautifulSoup(urlText, 'html.parser')    
@@ -47,8 +50,12 @@ def scrapeContent(urlText):
             images += imgFunc.scrapeArticleImages(sibling)
 
     caption=mainArticleDiv.find("div", "article-head").div.a.get_text()
-    
-    p = enc(paragraphs)
+
+    if caption.strip() == "Guyana News":
+        caption = "News"
+
+    #p = enc(paragraphs)
+    p = paragraphs
 
     return p, caption, (",".join(images))
 
@@ -58,12 +65,18 @@ def scrapeArticles(url, articleDate):
 
     articles=[]
     for link in articleList.children:
-        #articleTitle=link.find("h2").get_text()
-
-        articleTitle=enc(link.find("h2").get_text())
+        articleTitle=link.find("h2").get_text()
+        #articleTitle=enc(link.find("h2").get_text())
+        
         articleLink=link.find("h2").a["href"]
+        
+        article_html_result = get_raw_html(articleLink)
+        
+        if (article_html_result == 404):
+            print("Article not Found... {}".format(article_html_result))
+            continue
 
-        articleContent, articleCat, articleImages=scrapeContent(get_raw_html(articleLink))
+        articleContent, articleCat, articleImages=scrapeContent(article_html_result)
 
         #Slug setup
         articleSlug=slugify(articleTitle)
@@ -91,7 +104,7 @@ def main():
 
     url="https://www.stabroeknews.com/{}/{:0d}/{:0d}/".format(year, month, day)
 
-    daily_article_objs=scrapeArticles(url, datetime(year, month, day))
+    daily_article_objs=scrapeArticles(url, date(year, month, day))
    
     #db insert and commit
     for art in daily_article_objs:
