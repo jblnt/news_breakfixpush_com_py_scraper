@@ -5,9 +5,9 @@ from django.utils.text import slugify
 from random import random
 from requests import get, codes
 from time import sleep
+import images as imgFunc
 import db_insert
 import db_time
-import images as imgFunc
 import sys
 
 '''

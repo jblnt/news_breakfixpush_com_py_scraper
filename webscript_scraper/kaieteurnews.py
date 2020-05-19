@@ -5,8 +5,8 @@ from django.utils.text import slugify
 from random import random
 from requests import get, codes
 from time import sleep
-import db_insert
 import images as imgFunc
+import db_insert
 import db_time
 import sys
 
@@ -46,6 +46,7 @@ def scrapeContent(url):
     
     paragraphs=""
     images=[]
+    
     for sibling in mainArticleDiv.div.div.div.find("p").next_siblings:
         #gets text data from p tags of article
         if sibling.name == "p": 
