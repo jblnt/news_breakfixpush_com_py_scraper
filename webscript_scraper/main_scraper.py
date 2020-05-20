@@ -2,11 +2,10 @@ from article import Article_obj
 from bs4 import BeautifulSoup
 from datetime import date
 from django.utils.text import slugify
-#from random import random
 from requests import get, codes
 from time import sleep
 import images as imgFunc
-#import db_insert
+import db_insert
 import db_time
 import sys
 
@@ -142,12 +141,13 @@ def scrapeArticles(url, articleDate, mode):
         articles.append(Article_obj(articleTitle, articleSlug, articleContent, articleCat, articleSource, articleDate, articleImages))
 
         #// Attempt to prevent Slamming Server...
-        sec=4
-        #sec="{:.1f}".format(random()*10)
-        print("Sleeping for {} seconds. {} / {} complete".format(sec, counter, article_list_count))
-        sleep(sec)
-        counter += 1
-        #sleep(float(sec))
+        if counter != article_list_count:
+            sec = 4
+            print("Sleeping for {} seconds. {} / {} complete".format(sec, counter, article_list_count))
+            sleep(sec)
+            counter += 1
+        else:
+            print("Finiahsed. {} / {}".format(counter, article_list_count))
         #//
 
     return articles
@@ -186,7 +186,7 @@ def main():
 
     #for i in daily_article_objs:
         #print(i)
-
+    
     #db insert and commit
     for art in daily_article_objs:
         try:
