@@ -12,16 +12,22 @@ import sys
 def get_raw_html(site):
     r = get(site)
 
+    r.encoding = 'UTF-8'
+
     if (r.status_code == codes.ok):
         return r.text
     else:
         return r.status_code
-        #raise Exception("Error Occured getting HTML. Error Code: {}".format(r.status_code))
 
 def scrapePages(url):
     pagesArray=[]
+
+    html_result = get_raw_html(url)
+    if (type(html_result) == int):
+        print("An Error Occurred Retrieving Content. Code: {}</p>".format(str(r.status_code)))
+        return pagesArray
     
-    soup=BeautifulSoup(get_raw_html(url), 'html.parser')
+    soup=BeautifulSoup(html_result, 'html.parser')
     mainPages=soup.find("div", class_="pagination")
     
     if mainPages == None:
@@ -80,11 +86,13 @@ def scrapeContent(url, mode):
     return p, caption, (",".join(images))
 
 def scrapeArticles(url, articleDate, mode):
+    articles=[]
+
     main_html_result = get_raw_html(url)
-    
-    if (main_html_result == 404):
-        print("Page not Found... {}".format(main_html_result))
-        return
+
+    if (type(main_html_result) == int):
+        print("An Error Occurred Retrieving Content. Code: {}</p>".format(str(r.status_code)))
+        return articles
     
     beauObj=BeautifulSoup(main_html_result, 'html.parser')
 
@@ -98,9 +106,7 @@ def scrapeArticles(url, articleDate, mode):
 
     else:
         print("Invalid Mode Scraping Article List")
-        sys.exit()
-
-    articles=[]
+        sys.exit()    
 
     counter = 1
     article_list_count = len(ar_list)
@@ -125,8 +131,8 @@ def scrapeArticles(url, articleDate, mode):
             sys.exit()
 
         article_html_result = get_raw_html(articleLink)        
-        if (article_html_result == 404):
-            print("Article not Found... {}".format(article_html_result))
+        if (type(article_html_result) == int):
+            print("An Error Occurred Retrieving Content. Code: {}</p>".format(str(r.status_code)))
             continue
 
         articleContent, articleCat, articleImages=scrapeContent(article_html_result, mode)
@@ -140,15 +146,16 @@ def scrapeArticles(url, articleDate, mode):
         #append new article object
         articles.append(Article_obj(articleTitle, articleSlug, articleContent, articleCat, articleSource, articleDate, articleImages))
 
-        #// Attempt to prevent Slamming Server...
+        #Better log output
+        print("[SCRAPED]-[{}/{}]-[{}]-[{}]".format(counter, article_list_count, articleSource, articleTitle))
+
+        #Reduce time between connections to prevent DDoS
         if counter != article_list_count:
             sec = 4
-            print("Sleeping for {} seconds. {} / {} complete".format(sec, counter, article_list_count))
             sleep(sec)
             counter += 1
         else:
-            print("Finiahsed. {} / {}".format(counter, article_list_count))
-        #//
+            print("[COMPLETED]-[{}]".format(articleSource))
 
     return articles
 
@@ -159,7 +166,7 @@ def main():
 
     print("Scraping Archives from {}, {}, {}".format(day, month, year))
 
-    #news sources from which i will be scraping.
+    #links to news sources which will be scraped.
     sources={'kn': 'https://www.kaieteurnewsonline.com/', 'sn': 'https://www.stabroeknews.com/'}
 
     #iterate over the entires within the sources dict.
@@ -173,7 +180,6 @@ def main():
         if mode == "kn":
             pages=[url] + scrapePages(url)
 
-            #daily_article_objs=[]
             for page in pages:
                 daily_article_objs += scrapeArticles(page, date(year, month, day), mode)
 
@@ -184,9 +190,11 @@ def main():
             print("Invalid Mode")
             sys.exit()
 
-    #for i in daily_article_objs:
-        #print(i)
-    
+    '''
+    for i in daily_article_objs:
+        print(i)    
+    '''
+
     #db insert and commit
     for art in daily_article_objs:
         try:

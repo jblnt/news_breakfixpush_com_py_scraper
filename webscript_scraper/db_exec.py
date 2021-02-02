@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, VARCHAR, Date, Text, CHAR
+import os
 
 Base=declarative_base()
 
@@ -17,8 +18,11 @@ class Articles(Base):
     date=Column(Date, nullable=False)
     images=Column(Text, nullable=False)
 
+dbUserName = os.environ['DB_USERNAME']
+dbPassword = os.environ['DB_PASSWORD']
+dbHost = os.environ['DB_HOST']
+
 #engine=create_engine('sqlite:///db.sqlite3')
-#engine=create_engine('mysql+mysqldb://jblnt:rMaKukBWHqnP8a@localhost/django_newsapp')
-engine = create_engine('postgresql+psycopg2://jblnt:zk5WgHFqSu@localhost:5432/django')
+engine = create_engine('postgresql+psycopg2://'+dbUserName+':'+dbPassword+'@'+dbHost+':5432/django')
 
 Base.metadata.create_all(engine)
