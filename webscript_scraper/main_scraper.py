@@ -24,7 +24,7 @@ def scrapePages(url):
 
     html_result = get_raw_html(url)
     if (type(html_result) == int):
-        print("An Error Occurred Retrieving Content. Code: {}</p>".format(str(r.status_code)))
+        print("[ERROR]-[Error Retrieving Pages. Code: {}]".format(str(html_result)))
         return pagesArray
     
     soup=BeautifulSoup(html_result, 'html.parser')
@@ -89,9 +89,8 @@ def scrapeArticles(url, articleDate, mode):
     articles=[]
 
     main_html_result = get_raw_html(url)
-
     if (type(main_html_result) == int):
-        print("An Error Occurred Retrieving Content. Code: {}</p>".format(str(r.status_code)))
+        print("[ERROR]-[Error Retrieving Article List. Code: {}]".format(str(main_html_result)))
         return articles
     
     beauObj=BeautifulSoup(main_html_result, 'html.parser')
@@ -132,7 +131,7 @@ def scrapeArticles(url, articleDate, mode):
 
         article_html_result = get_raw_html(articleLink)        
         if (type(article_html_result) == int):
-            print("An Error Occurred Retrieving Content. Code: {}</p>".format(str(r.status_code)))
+            print("[ERROR]-[Error Retrieving Article Content. Code: {}]".format(str(article_html_result)))
             continue
 
         articleContent, articleCat, articleImages=scrapeContent(article_html_result, mode)
@@ -189,7 +188,6 @@ def main():
         else:
             print("Invalid Mode")
             sys.exit()
-
     '''
     for i in daily_article_objs:
         print(i)    
