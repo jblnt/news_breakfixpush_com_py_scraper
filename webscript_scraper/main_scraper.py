@@ -188,9 +188,12 @@ def main():
         else:
             print("Invalid Mode")
             sys.exit()
+
     '''
+
     for i in daily_article_objs:
         print(i)    
+    
     '''
 
     #db insert and commit
